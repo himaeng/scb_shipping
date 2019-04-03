@@ -1,0 +1,65 @@
+namespace org.pup.shipping.shipment
+
+import org.pup.shipping.contract.Contract
+
+/**
+ * abstract transaction ของ shipment
+ */
+abstract transaction ShipmentTransaction {
+  --> Shipment shipment
+}
+
+/**
+ * transaction สำหรับการอ่านอุณหภูมิในตู้คอนเทนเนอร์ในช่วงขนส่ง
+ */
+transaction TemperatureReading extends ShipmentTransaction {
+  o Double centigrade
+}
+
+/**
+ * Notification ที่จะเกิดขึ้นเมื่อ importer ได้รับตู้คอนเทนเนอร์ 
+ * เมื่อนั้น importer ควรจะชำระเงินค่าสินค้าให้ผู้ผลิตหรือ Grower 
+ */
+transaction ShipmentReceived extends ShipmentTransaction {
+  o DateTime receivedDateTime optional
+}
+
+/**
+ * The type of food being shipped
+ */
+enum ProductType {
+  o BANANAS
+  o APPLES
+  o PEARS
+  o PEACHES
+  o COFFEE
+}
+
+/** 
+ * The status of a shipment
+ */
+enum ShipmentStatus {
+  o CREATED
+  o IN_TRANSIT
+  o ARRIVED
+}
+
+/**
+ * A shipment being tracked as an asset on the ledger
+ */
+asset Shipment identified by shipmentId {
+  o String shipmentId             regex=/SHIP_[0-9][0-9][0-9]/
+  o ProductType type
+  o ShipmentStatus status         default="CREATED"
+  o Long unitCount
+  o String shipmentDescription    optional
+  o TemperatureReading[] temperatureReadings  optional
+  --> Contract contract
+}
+
+/**
+ * event รองรับ transaction ของ TemperatureReading
+ */
+event TemperatureRead {
+  o String shipmentId
+}
